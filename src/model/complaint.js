@@ -17,7 +17,7 @@ const complaintSchema = new mongoose.Schema({
     maxlength: 19
   },
   waktuKirim: {
-    type: Date,
+    type: String,
     required: true
   },
   kategori: {

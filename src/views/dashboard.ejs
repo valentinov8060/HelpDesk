@@ -6,69 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .navbar-nav .nav-item .nav-link {
-      padding-right: .5rem;
-      padding-left: .5rem;
-    }
-
-    .sidebar-sticky {
-      position: -webkit-sticky;
-      position: sticky;
-      top: 20px;
-      height: calc(100vh - 20px);
-      padding-top: .5rem;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
-
-      .navbar-toggler {
-        margin-left: auto;
-      }
-
-      .navbar-collapse {
-        background-color: #343a40;
-      }
-
-      .navbar-nav .nav-item .nav-link {
-        color: #fff;
-      }
-
-      .content-section {
-        padding-top: 1rem;
-      }
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Dashboard</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Welcome, <%= username %></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/logout">Logout</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <nav class="navbar bg-body-tertiary fixed-top bg-primary" data-bs-theme="dark">
+    <div class="container-fluid ">
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand" href="#">Dashboard</a>
+      <a class="nav-link text-bg-dark" href="/logout">Logout</a>
 
-  <div class="container-fluid">
-    <div class="row">
-
-      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-        <div class="sidebar-sticky pt-3">
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Navigation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
           <ul class="nav flex-column">
             <li class="nav-item">
               <a class="nav-link" href="#" onclick="showSection('home')">Halaman Depan</a>
@@ -81,10 +36,13 @@
             </li>
           </ul>
         </div>
-      </nav>
+      </div>
+    </div>
+  </nav>
 
-      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-
+  <div class="container-fluid" style="margin-top: 100px">
+    <div class="row">
+      <main role="main" class="  px-md-4">
         <div id="home" class="content-section">
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Data Pengaduan Masyarakat</h1>
@@ -151,51 +109,69 @@
               <tbody>
                 <% complaintsData.forEach((e, i) => { %>
                   <tr>
-                    <td>1</td>
+                    <td><%= i + 1 %></td>
                     <td><%= e.noTiket %></td>
                     <td><%= e.waktuKirim %></td>
                     <td><%= e.kategori %></td>
                     <td><%= e.judul %></td>
                     <td><%= e.status %></td>
-                    <td><a href="#">Detail</a></td>
+                    <td>
+                      <button type="button" class="btn btn-primary btn-sm btn-modal" data-bs-toggle="modal" data-bs-target="#detailModal<%= i %>">Detail</button>
+
+                      <!-- modal -->
+                      <div class="modal fade" id="detailModal<%= i %>" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h2 class="modal-title fs-5" id="detailModalLabel">Detail Pengaduan</h2>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="container-fluid">
+                                <div class="row">
+                                  <div class="col-md">
+                                    <ul class="list-group">
+                                      <li class="list-group-item"> <strong>Nomor Tiket : </strong><%= e.noTiket %></li>
+                                      <li class="list-group-item"> <strong>Waktu Kirim : </strong><%= e.waktuKirim %></li>
+                                      <li class="list-group-item"> <strong>Kategori : </strong><%= e.kategori %></li>
+                                      <li class="list-group-item"> <strong>Judul : </strong><%= e.judul %></li>
+                                      <li class="list-group-item"> <strong>Nama Pelapor : </strong><%= e.namaPelapor %></li>
+                                      <li class="list-group-item"> <strong>Status : </strong><%= e.status %></li>
+                                      <li class="list-group-item"> <strong>Masalah : </strong><%= e.masalah %></li>
+                                      <li class="list-group-item"> <strong>Petugas : </strong><%= e.username %></li>
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </td>
                   </tr>
                 <% }) %>
-
               </tbody>
             </table>
           </div>
         </div>
 
         <div id="akun" class="content-section" style="display: none;">
-          <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Akun Petugas</h1>
-          </div>
-          <div class="container">
-            <div class="row">
-              <div class="col">
-                <h3>Hai, <%= username %>
-                </h3>
-                <p>Akun petugas <%= username %>!</p>
-              </div>
-            </div>
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Akun Petugas <%= username %></h1>
           </div>
         </div>
 
         <div id="cetak" class="content-section" style="display: none;">
-          <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Cetak Laporan Pengaduan Masyarakat</h1>
           </div>
-          <div class="container">
-            <div class="row">
-              <div class="col">
-                <p>Cetak laporan</p>
-              </div>
-            </div>
+          <div class="d-flex justify-content-center">
+          
+            <a href="http://localhost:3000/generate-pdf" class="btn btn-success">Cetak laporan PDF</a>
+
           </div>
         </div>
-
       </main>
     </div>
   </div>
@@ -213,9 +189,8 @@
       selectedSection.style.display = 'block';
     }
   </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 </body>

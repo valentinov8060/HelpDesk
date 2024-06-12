@@ -7,6 +7,9 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
 const moment = require('moment-timezone');
+const PDFDocument = require('pdfkit');
+
+const fs = require('fs');
 
 // Set EJS sebagai view engine
 app.set('view engine', 'ejs');
@@ -68,7 +71,7 @@ app.post('/login', async (req, res) => {
 
 // Route untuk dashboard
 app.get('/dashboard', authenticateToken, async (req, res) => {
-  const complaintsData = await Complaint.find().select('noTiket waktuKirim kategori judul status');
+  const complaintsData = await Complaint.find().select('noTiket waktuKirim kategori judul status namaPelapor masalah username');
   console.log(complaintsData)
   res.render('dashboard', {
     title: 'Dashboard',
@@ -104,6 +107,48 @@ app.post('/input-pengaduan', authenticateToken, async (req, res) => {
   
   res.redirect('/dashboard')
 })
+
+app.get('/generate-pdf', async (req, res) => {
+  try {
+    // Mengambil data dari MongoDB
+    const complaints = await Complaint.find().select('noTiket waktuKirim kategori judul status namaPelapor masalah username');
+
+    // Membuat dokumen PDF baru
+    const doc = new PDFDocument();
+
+    // Stream dokumen PDF ke file
+    const stream = fs.createWriteStream('pengaduan-masyarakat.pdf');
+    doc.pipe(stream);
+
+    // Menambahkan judul ke PDF
+    doc.fontSize(25).text('Data Pengaduan Masyarakat', { align: 'center' });
+
+    // Menambahkan data dari MongoDB ke PDF
+    complaints.forEach(complaint => {
+      doc.moveDown();
+      doc.fontSize(12).text(`No Tiket: ${complaint.noTiket}`);
+      doc.fontSize(12).text(`Waktu Kirim: ${complaint.waktuKirim}`);
+      doc.fontSize(12).text(`Kategori: ${complaint.kategori}`);
+      doc.fontSize(12).text(`Judul: ${complaint.judul}`);
+      doc.fontSize(12).text(`Nama Pelapor: ${complaint.namaPelapor}`);
+      doc.fontSize(12).text(`Status: ${complaint.status}`);
+      doc.fontSize(12).text(`Masalah: ${complaint.masalah}`);
+      doc.fontSize(12).text(`Petugas: ${complaint.username}`);
+      doc.moveDown();
+    });
+
+    // Menyelesaikan pembuatan PDF
+    doc.end();
+
+    // Mengirimkan PDF ke klien setelah selesai
+    stream.on('finish', () => {
+      res.download('pengaduan-masyarakat.pdf');
+    });
+
+  } catch (error) {
+    res.status(500).send('Error: ' + error.message);
+  }
+});
 
 // Route untuk logout
 app.get('/logout', (req, res) => {
