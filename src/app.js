@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
+const moment = require('moment-timezone');
 
 // Set EJS sebagai view engine
 app.set('view engine', 'ejs');
@@ -28,13 +29,14 @@ app.use(flash());
 // Middleware untuk autentikasi
 const authenticateToken = require('./middleware/auth');
 
+// Database
 const { User } = require('./model/user')
+const { Complaint } = require('./model/complaint')
 require('./model/connect')
 
-// Route untuk halaman login
+// Route untuk login
 app.get('/login', (req, res) => {
   res.render('login', {
-    title: 'Login',
     loginFailedMessage: req.flash('loginFailedMessage'),
   });
 });
@@ -57,17 +59,65 @@ app.post('/login', async (req, res) => {
       console.log('Login Gagal')
     }
   } catch (error) {
-    res.status(500).send('Terjadi kesalahan: ' + error.message);
+    res.status(500)
+    res.render('error', {
+      errorMessage: `Terjadi kesalahan: ${error.message}`
+    })
   }
 });
 
-// Route untuk halaman dashboard
-app.get('/dashboard', authenticateToken, (req, res) => {
+// Route untuk dashboard
+app.get('/dashboard', authenticateToken, async (req, res) => {
+  const complaintsData = await Complaint.find().select('noTiket waktuKirim kategori judul status');
+  console.log(complaintsData)
   res.render('dashboard', {
     title: 'Dashboard',
     username: req.username,
+    complaintsData: complaintsData
   });
 });
+
+app.post('/input-pengaduan', authenticateToken, async (req, res) => {
+  const username = req.username;
+  const { namaPelapor, kategori, namaPengaduan, masalah} = req.body;
+  
+  const currentDate = moment().tz("Asia/Jakarta");
+  const year = currentDate.format('YYYY');
+  const month = currentDate.format('MM');
+  const day = currentDate.format('DD');
+  const hour = currentDate.format('HH');
+  const minute = currentDate.format('mm');
+  const second = currentDate.format('ss');
+  
+  const noTiket = `TKT/${year}${month}${day}/${hour}${minute}${second}`
+  const waktuKirim = currentDate.format('YYYY-MM-DD HH:mm:ss')
+
+  await Complaint.create({
+    username: username,
+    noTiket: noTiket,
+    waktuKirim: waktuKirim,
+    kategori: kategori,
+    judul: namaPengaduan,
+    namaPelapor: namaPelapor,
+    masalah: masalah,
+  })
+  
+  res.redirect('/dashboard')
+})
+
+// Route untuk logout
+app.get('/logout', (req, res) => {
+  res.clearCookie('authToken');
+  res.redirect('/login');
+});
+
+// Route untuk halaman error
+app.use('/', (req, res) => {
+  res.status(404)
+  res.render('error', {
+    errorMessage: '404 Not Found'
+  })
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
